@@ -72,13 +72,15 @@ typedef struct {
 
 /* ------------------------------------------------------------------------- */
 
+CortexMBoardState *cortexm_board_get(void);
+
 const char *cortexm_board_get_name(CortexMBoardState *board);
 
 const char *cortexm_board_get_desc(CortexMBoardState *board);
 
 void cortexm_board_greeting(CortexMBoardState *board);
 
-void cortexm_board_init_graphic_image(CortexMBoardState *board,
+BoardGraphicContext *cortexm_board_init_graphic_image(CortexMBoardState *board,
         const char *file_name);
 
 /* ------------------------------------------------------------------------- */

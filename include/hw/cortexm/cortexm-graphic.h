@@ -37,6 +37,10 @@
 /* Storage for board graphic context, stored in CortexMBoardState */
 typedef struct {
 
+    const char *picture_file_name;
+    const char *picture_file_absolute_path;
+    const char *window_caption;
+
 #if defined(CONFIG_SDL)
 #if defined(CONFIG_SDLABI_2_0)
     SDL_Window *window;
@@ -61,13 +65,39 @@ typedef struct {
 
 /* ------------------------------------------------------------------------- */
 
-void cortexm_graphic_init_timer(void);
+enum {
+    GRAPHIC_EVENT_NONE = 0,
+    GRAPHIC_EVENT_BOARD_INIT,
+    GRAPHIC_EVENT_LED_INIT,
+    GRAPHIC_EVENT_LED_TURN,
+};
+
+/* ------------------------------------------------------------------------- */
+
+void cortexm_graphic_start(void);
+
+int cortexm_graphic_push_event(int code, void *data1, void *data2);
+
+int cortexm_graphic_event_loop(void);
+
+/* ----- Board graphic functions ----- */
+void cortexm_graphic_board_clear_graphic_context(
+        BoardGraphicContext *board_graphic_context);
+
+bool cortexm_graphic_board_is_graphic_context_initialised(
+        BoardGraphicContext *board_graphic_context);
 
 void cortexm_graphic_board_init_graphic_context(
-        BoardGraphicContext *board_graphic_context, const char *file_name,
-        const char *caption);
+        BoardGraphicContext *board_graphic_context);
 
-void cortexm_graphic_led_init_context(
+/* ----- LED graphic function ----- */
+void cortexm_graphic_led_clear_graphic_context(
+        LEDGraphicContext *led_graphic_context);
+
+bool cortexm_graphic_led_is_graphic_context_initialised(
+        LEDGraphicContext *led_graphic_context);
+
+void cortexm_graphic_led_init_graphic_context(
         BoardGraphicContext *board_graphic_context,
         LEDGraphicContext *led_graphic_context, uint8_t red, uint8_t green,
         uint8_t blue);

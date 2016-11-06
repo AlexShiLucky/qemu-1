@@ -124,7 +124,8 @@ int main(int argc, char **argv)
 
 #if defined(CONFIG_GNU_ARM_ECLIPSE)
 #include <strings.h>
-#include "hw/cortexm/cortexm-helper.h"
+#include <hw/cortexm/cortexm-helper.h>
+#include <hw/cortexm/cortexm-graphic.h>
 #endif /* defined(CONFIG_GNU_ARM_ECLIPSE) */
 
 #if defined(CONFIG_VERBOSE)
@@ -172,7 +173,9 @@ int vga_interface_type = VGA_NONE;
 static int full_screen = 0;
 static int no_frame = 0;
 int no_quit = 0;
+#if !defined(CONFIG_GNU_ARM_ECLIPSE)
 static bool grab_on_hover;
+#endif
 CharDriverState *serial_hds[MAX_SERIAL_PORTS];
 CharDriverState *parallel_hds[MAX_PARALLEL_PORTS];
 CharDriverState *virtcon_hds[MAX_VIRTIO_CONSOLES];
@@ -3112,7 +3115,9 @@ int main(int argc, char **argv, char **envp)
     const char *kernel_filename, *kernel_cmdline;
     const char *boot_order = NULL;
     const char *boot_once = NULL;
+#if !defined(CONFIG_GNU_ARM_ECLIPSE)
     DisplayState *ds;
+#endif
     int cyls, heads, secs, translation;
     QemuOpts *hda_opts = NULL, *opts, *machine_opts, *icount_opts = NULL;
     QemuOptsList *olist;
@@ -4501,6 +4506,8 @@ int main(int argc, char **argv, char **envp)
         }
     }
 
+#if !defined(CONFIG_GNU_ARM_ECLIPSE)
+
 #if defined(CONFIG_VNC)
     if (!QTAILQ_EMPTY(&(qemu_find_opts("vnc")->head))) {
         display_remote++;
@@ -4545,6 +4552,10 @@ int main(int argc, char **argv, char **envp)
 #endif
         exit(1);
     }
+
+#else
+    cortexm_graphic_start();
+#endif /* !defined(CONFIG_GNU_ARM_ECLIPSE) */
 
     page_size_init();
     socket_init();
@@ -4840,6 +4851,8 @@ int main(int argc, char **argv, char **envp)
         qemu_register_reset(restore_boot_order, g_strdup(boot_order));
     }
 
+#if !defined(CONFIG_GNU_ARM_ECLIPSE)
+
     ds = init_displaystate();
 
     /* init local displays */
@@ -4859,6 +4872,8 @@ int main(int argc, char **argv, char **envp)
     default:
         break;
     }
+
+#endif /* !defined(CONFIG_GNU_ARM_ECLIPSE) */
 
     /* must be after terminal init, SDL library changes signal handlers */
     os_setup_signal_handling();
@@ -4931,7 +4946,16 @@ int main(int argc, char **argv, char **envp)
     os_setup_post();
 
     trace_init_vcpu_events();
+
+#if defined(CONFIG_GNU_ARM_ECLIPSE)
+    /* Move the existing main loop to a separate thread, to free the
+     * main thread for graphics event loop. */
+    SDL_CreateThread((SDL_ThreadFunction)main_loop, "mainloop", NULL);
+
+    cortexm_graphic_event_loop();
+#else
     main_loop();
+#endif
     replay_disable_events();
 
     bdrv_close_all();
