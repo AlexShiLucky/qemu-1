@@ -35,7 +35,8 @@
 #include "hw/cortexm/cortexm-nvic.h"
 #include "hw/cortexm/cortexm-helper.h"
 #include "qapi/error.h"
-#include "hw/cortexm/cortexm-bitband.h"
+#include <hw/cortexm/cortexm-bitband.h>
+#include <hw/cortexm/cortexm-board.h>
 
 #if defined(CONFIG_VERBOSE)
 #include "verbosity.h"
@@ -98,7 +99,7 @@ static void cortexm_mcu_realize_callback(DeviceState *dev, Error **errp)
     /* Remember the local copy for future use. */
     cm_state->capabilities = (const CortexMCapabilities*) capabilities;
 
-    const MachineState *machine = MACHINE(cm_object_get_machine());
+    const MachineState *machine = MACHINE(cortexm_board_get());
     const char *image_filename = NULL;
     /* Use either the --image or the --kernel */
     if (machine->image_filename) {
